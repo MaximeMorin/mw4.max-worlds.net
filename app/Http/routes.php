@@ -11,6 +11,7 @@
 |
 */
 
-$app->get('/', function () use ($app) {
+$app->get('/', function () use ($app) {	
+	var_dump(DB::select("SELECT * FROM players"));
     return $app->version();
 });
