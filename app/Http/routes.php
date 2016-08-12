@@ -11,7 +11,11 @@
 |
 */
 
-$app->get('/', function () use ($app) {	
-	var_dump(DB::select("SELECT * FROM players"));
-    return $app->version();
+$app->get('/', function () {	
+	return response()->json();
 });
+
+$app->post('/api/game/files/', ['uses' => 'APIController@postGameFile']);
+
+$app->get('/api/players/', ['uses' => 'APIController@getPlayers']);
+$app->get('/api/players/types/', ['uses' => 'APIController@getPlayerTypes']);
