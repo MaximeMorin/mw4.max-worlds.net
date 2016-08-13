@@ -9,13 +9,15 @@ use DB;
 class PlayerScoreParser implements iParser
 {
 	public function parse($gameId, $args) {		
-		$playerId = $args[2];
-		$playerName = $args[3];
-		$playerMech = $args[4];
-		$playerWeight = $args[5];
-		$playerBot = strpos($args[6], 'IS_A_BOT') !== FALSE;
+		$data = [];
+		$data['gameId'] = $gameId;
+		$data['playerId'] = $args[2];
+		$data['score'] = $args[3];
 		
-		
-		DB::update('UPDATE games SET map = :map WHERE id = :gameId' , ['map' => $splittedLine[4], 'gameId' => $gameId]);			
+		DB::update('UPDATE game_scores
+					SET player_score = :score
+					WHERE game_id = :gameId 
+						AND player_game_id = :playerId
+						AND player_disconnected = 0', $data);	
 	}
 }

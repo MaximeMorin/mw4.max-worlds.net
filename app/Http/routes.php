@@ -12,10 +12,11 @@
 */
 
 $app->get('/', function () {	
-	return response()->json();
+	return view('index', []);
 });
 
 $app->post('/api/game/files/', ['uses' => 'APIController@postGameFile']);
 
-$app->get('/api/players/', ['uses' => 'APIController@getPlayers']);
-$app->get('/api/players/types/', ['uses' => 'APIController@getPlayerTypes']);
+$app->get('/api/games/', ['uses' => 'APIController@getGames']);
+
+$app->get('/api/games/parse/{id}', ['uses' => 'APIController@getParse']);

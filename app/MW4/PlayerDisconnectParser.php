@@ -6,19 +6,17 @@ use DB;
 
 // Example :
 //1105.9030	Player_Disconnect	6	{CYT} ARCHER
-class PlayerConnectParser implements iParser
+class PlayerDisconnectParser implements iParser
 {
 	public function parse($gameId, $args) {		
+		$data = [];
+		$data['gameId'] = $gameId;
+		$data['playerId'] = $args[2];
 		
-		// WHAT TO DO WITH A DISCONNECT!?!?! (Mech change, etc...)
-		
-		$playerId = $args[2];
-		$playerName = $args[3];
-		$playerMech = $args[4];
-		$playerWeight = $args[5];
-		$playerBot = strpos($args[6], 'IS_A_BOT') !== FALSE;
-		
-		
-		DB::update('UPDATE games SET map = :map WHERE id = :gameId' , ['map' => $splittedLine[4], 'gameId' => $gameId]);			
+		DB::update('UPDATE game_scores
+					SET player_disconnected = 1
+					WHERE game_id = :gameId 
+						AND player_game_id = :playerId
+						AND player_disconnected = 0', $data);			
 	}
 }

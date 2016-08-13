@@ -2,7 +2,6 @@
 
 namespace App\MW4;
 
-use File;
 use DB;
 
 class GameParser
@@ -12,14 +11,30 @@ class GameParser
 		
 		DB::beginTransaction();
 		
-		$content = File::get($gameFile);		
-		foreach ($content as $line) {
-			$splitLine = explode("\t", $line);	
+		$contentArray = file($gameFile);
+		$contentLength = count($contentArray);
+		for ($i = 0; $i < $contentLength; $i++) {
 			$parser = null;
-			$eventType = $splitLine[1];
+			$splitLine = self::splitLine($contentArray, $i);	
+			
+			$eventType = self::sanitizeValue($splitLine[1]);
 			switch ($eventType) {
 				case "info":
 					$parser = new InfoParser();
+					break;
+				case "Game_Start":
+					$args = [];
+					$args[0] = "Game_Start";
+					
+					$splitLine = self::splitLine($contentArray, ++$i);
+					$args[1] = $splitLine[1];
+										
+					$splitLine = self::splitLine($contentArray, ++$i);
+					$args[2] = $splitLine[1];
+					
+					$splitLine = $args;
+						
+					$parser = new GameStartParser();
 					break;
 				case "Player_Connect" :
 					$parser = new PlayerConnectParser();
@@ -38,9 +53,20 @@ class GameParser
 					break;
 			}
 			
-			$parser->parse($gameId, $splitLine);
-		}	
+			if ($parser != null) {
+				$parser->parse($gameId, $splitLine);
+			}			
+		}			
 		
 		DB::commit();
+	}
+	
+	private static function splitLine($contentArray, $index) {
+		$line = $contentArray[$index];
+		return explode("\t", $line);
+	}
+	
+	public static function sanitizeValue($value) {
+		return str_replace(array("\n", "\r"), '', $value);
 	}
 }

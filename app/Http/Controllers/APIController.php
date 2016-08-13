@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Log;
 use DB;
 use Illuminate\Http\Request;
+use \App\MW4\GameParser;
 
 class APIController extends Controller
 {
@@ -16,17 +17,46 @@ class APIController extends Controller
 			DB::insert('INSERT INTO games (server_id) VALUES (?);', array(1));
 			$gameId = DB::getPdo()->lastInsertId();
 			DB::commit();
-						
+			
 			$uploadedFile->move(env('MW4_GAME_STATS_FOLDER'), $gameId . '.log');
+			
+			GameParser::parse($gameId);
 		}				
 	}
 	
-	public function getPlayers() {
-		return response()->json(DB::select("SELECT * FROM players"));
+	public function getGames() {
+		$gamesFromDB = DB::select("SELECT * FROM games");
+		
+		$games = [];		
+		foreach ($gamesFromDB as $game) {
+			$game->teams = [];
+			$games[$game->id] = $game;
+		}
+		
+		$gameScores = DB::select("SELECT * FROM game_scores");
+		foreach ($gameScores as $score) {
+			$game = $games[$score->game_id];			
+			
+			if (array_key_exists($score->player_team, $game->teams)) {
+				$team = $game->teams[$score->player_team];
+				$team['score'] += $score->player_score;
+				$team['kills'] += $score->player_kills;
+				$team['deaths'] += $score->player_deaths;
+				$team['scores'][] = $score;
+				$game->teams[$score->player_team] = $team;
+			} else {
+				$team = ['id' => $score->player_team, 'score' => $score->player_score, 'kills' => $score->player_kills, 'deaths' => $score->player_deaths, 'scores' => [ $score ] ];				
+				$game->teams[$score->player_team] = $team;
+			}			
+		}
+		
+		foreach ($games as $game) {
+			$game->teams = array_values($game->teams);
+		}		
+		return response()->json(array_values($games));
 	}
 	
-	public function getPlayerTypes() {
-		return response()->json(DB::select("SELECT * FROM player_types"));
+	public function getParse($gameId) {
+		GameParser::parse($gameId);
 	}
-
 }
