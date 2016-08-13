@@ -56,7 +56,11 @@ class APIController extends Controller
 		return response()->json(array_values($games));
 	}
 	
-	public function getParse($gameId) {
-		GameParser::parse($gameId);
+	public function getParse() {
+		DB::statement("TRUNCATE game_scores");
+		$gamesFromDB = DB::select("SELECT * FROM games");
+		foreach ($gamesFromDB as $game) {
+			GameParser::parse($game->id);
+		}
 	}
 }

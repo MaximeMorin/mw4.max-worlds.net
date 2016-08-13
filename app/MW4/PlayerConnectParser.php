@@ -11,6 +11,7 @@ class PlayerConnectParser implements iParser
 	public function parse($gameId, $args) {		
 		$data = [];
 		$data['gameId'] = $gameId;
+		$data['time'] = $args[0];
 		$data['playerId'] = $args[2];
 		$data['playerName'] = $args[3];
 		$data['playerTeam'] = null;
@@ -18,8 +19,8 @@ class PlayerConnectParser implements iParser
 		$data['playerWeight'] = $args[5];
 		$data['playerBot'] = strpos($args[6], 'IS_A_BOT') !== FALSE;
 		
-		DB::insert('INSERT INTO game_scores (game_id, player_game_id, player_name, player_team, player_is_bot, player_mech, player_weight, player_score, player_kills, player_deaths)
-					VALUES (:gameId, :playerId, :playerName, :playerTeam, :playerBot, :playerMech, :playerWeight, 0, 0, 0)', $data);		
+		DB::insert('INSERT INTO game_scores (game_id, player_game_id, player_name, player_team, player_is_bot, player_mech, player_weight, player_score, player_kills, player_deaths, time_start)
+					VALUES (:gameId, :playerId, :playerName, :playerTeam, :playerBot, :playerMech, :playerWeight, 0, 0, 0, :time)', $data);		
 	}
 	
 	private function getMechName($mechCode) {

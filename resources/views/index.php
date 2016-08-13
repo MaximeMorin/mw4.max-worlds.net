@@ -9,7 +9,8 @@
 		
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
-		
+				
+		<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-resource.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-route.js"></script>
@@ -25,10 +26,11 @@
 					<tr>
 						<th style="width:20%">Name</th>
 						<th>Mech</th>
-						<th style="width:12%" class="text-right">Score</th>
-						<th style="width:12%" class="text-right">Kills</th>
-						<th style="width:12%" class="text-right">Deaths</th>
-						<th style="width:12%" class="text-right">K/D Ratio</th>
+						<th style="width:10%" class="text-right">Score</th>
+						<th style="width:10%" class="text-right">Kills</th>
+						<th style="width:10%" class="text-right">Deaths</th>
+						<th style="width:10%" class="text-right">K/D Ratio</th>
+						<th style="width:10%" class="text-right">Time Played</th>
 					</tr>
 				</thead>
 				<tbody ng-repeat="team in game.teams | orderBy:'-score'">
@@ -43,6 +45,7 @@
 						<th class="text-right">{{ team.kills }}</th>
 						<th class="text-right">{{ team.deaths }}</th>
 						<th class="text-right">{{ main.getKDRatio(team.kills, team.deaths) | number:2 }}</th>
+						<th class="text-right">-</th>
 					</tr>
 					<tr ng-repeat="score in team.scores | orderBy:['-player_score']">
 						<td style="padding-left:2em;">
@@ -61,6 +64,7 @@
 						<td class="text-right">{{ score.player_kills }}</td>
 						<td class="text-right">{{ score.player_deaths }}</td>										
 						<td class="text-right">{{ main.getKDRatio(score.player_kills, score.player_deaths) | number:2 }}</td>										
+						<td class="text-right">{{ main.getTimePlayed(score) }}</td>										
 					</tr>
 				</tbody>		
 			</table>			

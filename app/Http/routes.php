@@ -19,4 +19,4 @@ $app->post('/api/game/files/', ['uses' => 'APIController@postGameFile']);
 
 $app->get('/api/games/', ['uses' => 'APIController@getGames']);
 
-$app->get('/api/games/parse/{id}', ['uses' => 'APIController@getParse']);
+$app->get('/api/games/parse', ['uses' => 'APIController@getParse']);

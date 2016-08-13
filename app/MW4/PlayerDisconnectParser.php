@@ -10,7 +10,7 @@ class PlayerDisconnectParser implements iParser
 {
 	public function parse($gameId, $args) {		
 		$data = [];
-		$data['gameId'] = $gameId;
+		$data['gameId'] = $gameId;		
 		$data['playerId'] = $args[2];
 		
 		DB::update('UPDATE game_scores

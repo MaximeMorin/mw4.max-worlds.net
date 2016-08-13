@@ -40,6 +40,12 @@ angular.module('mw4').controller('mainController', ['gamesFactory', function(gam
 		return kills / Math.max(deaths, 1);
 	};
 	
+	ctrl.getTimePlayed = function(score) {
+		var start = parseFloat(score.time_start);
+		var end = parseFloat(score.time_end);
+		return moment.duration(end - start, "seconds").humanize();
+	};
+	
 	ctrl.init();
 	
 	return ctrl;
