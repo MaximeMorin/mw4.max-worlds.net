@@ -1,0 +1,41 @@
+<div class="row">
+	<div class="col-xs-12">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th style="width:10%" class="text-right">Average Weight</th>					
+					<th style="width:8%" class="text-right">Games Played</th>
+					<th style="width:8%" class="text-right">Wins</th>
+					<th style="width:8%" class="text-right">Loses</th>
+					<th style="width:8%" class="text-right">W/L Ratio</th>
+					<th style="width:8%" class="text-right">Kills</th>
+					<th style="width:8%" class="text-right">Deaths</th>
+					<th style="width:8%" class="text-right">K/D Ratio</th>					
+					<th style="width:8%" class="text-right">Efficiency *</th>
+					<th style="width:8%" class="text-right">Time Played</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="player in playersCtrl.players | orderBy:'player_name'">
+					<td>
+						{{ player.player_name }}
+					</td>
+					<td class="text-right">{{ player.average_weight | number:2 }}</td>					
+					<td class="text-right">{{ player.game_played }}</td>
+					<td class="text-right">{{ player.game_won }}</td>
+					<td class="text-right">{{ player.game_played - player.game_won }}</td>
+					<td class="text-right">{{ player.game_won / (player.game_played - player.game_won) | number:2 }}</td>															
+					<td class="text-right">{{ player.sum_kills }}</td>
+					<td class="text-right">{{ player.sum_deaths }}</td>										
+					<td class="text-right">{{ mainCtrl.getKDRatio(player.sum_kills, player.sum_deaths) | number:2 }}</td>										
+					<td class="text-right">{{ player.sum_score / player.time_played / player.average_weight | number:2 }}</td>										
+					<td class="text-right">{{ mainCtrl.getTotalTimePlayed(player.time_played) }}</td>										
+				</tr>
+			</tbody>		
+		</table>		
+		<p>
+			<small>* Efficiency is the total score divided by the time played in seconds and the average mech weight in tons.</small>
+		</p>
+	</div>
+</div>			

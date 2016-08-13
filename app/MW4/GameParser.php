@@ -51,12 +51,15 @@ class GameParser
 				case "PS" :
 					$parser = new PlayerScoreParser();
 					break;
+				case "Game_End" :
+					$parser = new GameEndParser();
+					break;
 			}
 			
 			if ($parser != null) {
 				$parser->parse($gameId, $splitLine);
 			}			
-		}			
+		}							
 		
 		DB::commit();
 	}
