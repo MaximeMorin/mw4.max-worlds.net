@@ -1,5 +1,5 @@
 <div class="row">
-	<div class="col-xs-12" ng-repeat="game in gamesCtrl.games | orderBy:'-id'">			
+	<div class="col-xs-12" ng-repeat="game in gamesCtrl.games">			
 		<h3>{{ game.game_type }} on {{ game.map }} for {{ game.time_limit }} minutes at {{ game.date }}</h3>
 		<table class="table table-hover">
 			<thead>
@@ -13,7 +13,7 @@
 					<th style="width:12%" class="text-right">Time Played</th>
 				</tr>
 			</thead>
-			<tbody ng-repeat="team in game.teams | orderBy:'-score'">
+			<tbody ng-repeat="team in game.teams">
 				<tr>
 					<th>
 						Team {{ team.id }} &ndash;
@@ -24,10 +24,10 @@
 					<th class="text-right">{{ team.score }}</th>
 					<th class="text-right">{{ team.kills }}</th>
 					<th class="text-right">{{ team.deaths }}</th>
-					<th class="text-right">{{ mainCtrl.getKDRatio(team.kills, team.deaths) | number:2 }}</th>
+					<th class="text-right">{{ gamesCtrl.getKDRatio(team.kills, team.deaths) | number:2 }}</th>
 					<th class="text-right">-</th>
 				</tr>
-				<tr ng-repeat="score in team.scores | orderBy:['-player_score']">
+				<tr ng-repeat="score in team.scores">
 					<td style="padding-left:2em;">
 						<span ng-show="!score.player_is_bot">
 							<i class="fa fa-user fa-lg"></i>
@@ -43,8 +43,8 @@
 					<td class="text-right">{{ score.player_score }}</td>
 					<td class="text-right">{{ score.player_kills }}</td>
 					<td class="text-right">{{ score.player_deaths }}</td>										
-					<td class="text-right">{{ mainCtrl.getKDRatio(score.player_kills, score.player_deaths) | number:2 }}</td>										
-					<td class="text-right">{{ mainCtrl.getTimePlayed(score) }}</td>										
+					<td class="text-right">{{ gamesCtrl.getKDRatio(score.player_kills, score.player_deaths) | number:2 }}</td>										
+					<td class="text-right">{{ gamesCtrl.getTimePlayed(score) }}</td>										
 				</tr>
 			</tbody>		
 		</table>			

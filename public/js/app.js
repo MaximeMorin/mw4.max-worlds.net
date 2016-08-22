@@ -15,7 +15,7 @@ angular.module('mw4').config(['$routeProvider', 'cfpLoadingBarProvider', functio
         templateUrl: 'views/players.html',
         controller: 'playersController',
         controllerAs: 'playersCtrl'
-      }).otherwise({redirectTo: '/games'});
+      }).otherwise({redirectTo: '/players'});
 	  
 	  cfpLoadingBarProvider.includeSpinner = false;	  
 }]);
@@ -39,6 +39,15 @@ angular.module('mw4').factory('statsFactory', ['statsService', function(statsSer
 		return statsService.allPlayers().$promise;		
 	};
 	
+	
+	factory.utils.getRatio = function(numerator, denominator) {
+		return numerator / Math.max(denominator, 1);
+	};	
+	
+	factory.utils.getTotalTimePlayed = function(timePlayed) {
+		return moment.duration(parseFloat(timePlayed), "seconds").humanize();
+	};		
+	
 	return factory;
 }]);
 
@@ -47,10 +56,27 @@ angular.module('mw4').controller('mainController', ['$location', function($locat
 	
 	ctrl.isTabActive = function(tabRoute) {
 		return $location.path().indexOf(tabRoute) >= 0;
-	};
+	};	
 	
-	ctrl.getKDRatio = function(kills, deaths) {
-		return kills / Math.max(deaths, 1);
+	return ctrl;
+}]);
+
+angular.module('mw4').controller('gamesController', ['$filter', 'statsFactory', function($filter, statsFactory) {
+	var ctrl = this;
+	ctrl.allGames = [];
+	ctrl.games = [];
+		
+	ctrl.init = function() {		
+		statsFactory.allGames().then(function(results) {
+			ctrl.allGames = $filter('orderBy')(results, 'id', true);
+			ctrl.games = $filter('limitTo')(ctrl.allGames, 10);
+			ctrl.games.forEach(function(g) {
+				g.teams = $filter('orderBy')(g.teams, 'score', true);
+				g.teams.forEach(function(t) {
+					t.scores = $filter('orderBy')(t.scores, 'player_score', true);
+				});
+			});
+		});
 	};
 	
 	ctrl.getTimePlayed = function(score) {
@@ -59,21 +85,8 @@ angular.module('mw4').controller('mainController', ['$location', function($locat
 		return moment.duration(end - start, "seconds").humanize();
 	};		
 	
-	ctrl.getTotalTimePlayed = function(timePlayed) {
-		return moment.duration(parseFloat(timePlayed), "seconds").humanize();
-	};		
-	
-	return ctrl;
-}]);
-
-angular.module('mw4').controller('gamesController', ['statsFactory', function(statsFactory) {
-	var ctrl = this;
-	ctrl.games = [];
-		
-	ctrl.init = function() {
-		statsFactory.allGames().then(function(results) {
-			ctrl.games = results;
-		});
+	ctrl.getKDRatio = function(kills, deaths) {
+		return statsFactory.utils.getRatio(kills, deaths);
 	};
 	
 	ctrl.init();
@@ -81,14 +94,57 @@ angular.module('mw4').controller('gamesController', ['statsFactory', function(st
 	return ctrl;
 }]);
 
-angular.module('mw4').controller('playersController', ['statsFactory', function(statsFactory) {
+angular.module('mw4').controller('playersController', ['$filter', 'statsFactory', function($filter, statsFactory) {
 	var ctrl = this;
 	ctrl.players = [];
+	ctrl.maximumGamePlayed = 0;
+	ctrl.maximumKillDeathRatio = 0;
+	ctrl.maximumWinLoseRatio = 0;
+	ctrl.maximumEfficiency = 0;
 		
 	ctrl.init = function() {
-		statsFactory.allPlayers().then(function(results) {
+		statsFactory.allPlayers().then(function(results) {			
 			ctrl.players = results;
+			ctrl.initComputedStats();
+			ctrl.players = $filter('orderBy')(ctrl.players, 'totalScore', true);
 		});
+	};
+	
+	ctrl.initComputedStats = function() {
+		ctrl.players.forEach(function(p) {
+			p.kdRatio = statsFactory.utils.getRatio(p.sum_kills, p.sum_deaths);
+			p.game_lost = p.game_played - p.game_won;
+			p.wlRatio = statsFactory.utils.getRatio(p.game_won, p.game_lost);
+			p.efficiency = p.sum_score / p.time_played / p.average_weight;
+			
+			if (p.game_played > ctrl.maximumGamePlayed) {
+				ctrl.maximumGamePlayed = p.game_played;
+			}
+			
+			if (p.kdRatio > ctrl.maximumKillDeathRatio) {
+				ctrl.maximumKillDeathRatio = p.kdRatio;
+			}
+			
+			if (p.wlRatio > ctrl.maximumWinLoseRatio) {
+				ctrl.maximumWinLoseRatio = p.wlRatio;
+			}
+			
+			if (p.efficiency > ctrl.maximumEfficiency) {
+				ctrl.maximumEfficiency = p.efficiency;
+			}
+		});
+		
+		ctrl.players.forEach(function(p) {
+			p.gamePlayedScore = statsFactory.utils.getRatio(p.game_played, ctrl.maximumGamePlayed) * 25;
+			p.kdRatioScore = statsFactory.utils.getRatio(p.kdRatio, ctrl.maximumKillDeathRatio) * 25;
+			p.wlRatioScore = statsFactory.utils.getRatio(p.wlRatio, ctrl.maximumWinLoseRatio) * 25;
+			p.efficiencyScore = p.efficiency / ctrl.maximumEfficiency * 25;		
+			p.totalScore = p.gamePlayedScore + p.kdRatioScore + p.wlRatioScore + p.efficiencyScore;
+		});
+	};
+	
+	ctrl.getTotalTimePlayed = function(timePlayed) {
+		return statsFactory.utils.getTotalTimePlayed(timePlayed);
 	};
 	
 	ctrl.init();

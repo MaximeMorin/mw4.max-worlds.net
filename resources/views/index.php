@@ -25,8 +25,8 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<ul class="nav nav-tabs">
+					  <li role="presentation" ng-class="{'active' : mainCtrl.isTabActive('players') }"><a href="#/players">Player Rankings</a></li>						
 					  <li role="presentation" ng-class="{'active' : mainCtrl.isTabActive('games') }"><a href="#/games">Recent Games</a></li>
-					  <li role="presentation" ng-class="{'active' : mainCtrl.isTabActive('players') }"><a href="#/players">Player Rankings</a></li>
 					</ul>						
 				</div>
 			</div>
