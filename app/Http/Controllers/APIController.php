@@ -59,7 +59,7 @@ class APIController extends Controller
 	public function getPlayers() {
 		$players = DB::select("
 			SELECT player_name, AVG(player_weight) AS average_weight, SUM(player_score) AS sum_score, SUM(player_kills) AS sum_kills,
-				SUM(player_deaths) AS sum_deaths, `gamesPlayedByPlayer`(player_name) AS game_played, `gamesWonByPlayer`(player_name) AS game_won,
+				SUM(player_deaths) AS sum_deaths, `gamesPlayedByPlayer`(player_name) AS game_played, `gamesLostByPlayer`(player_name) AS game_lost,
 				SUM(GREATEST(time_end, time_start) - time_start) AS time_played
 			FROM game_scores
 			WHERE player_is_bot = 0

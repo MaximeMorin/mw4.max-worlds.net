@@ -15,6 +15,8 @@ angular.module('mw4').config(['$routeProvider', 'cfpLoadingBarProvider', functio
         templateUrl: 'views/players.html',
         controller: 'playersController',
         controllerAs: 'playersCtrl'
+      }).when('/logs', {
+        templateUrl: 'views/logs.html'
       }).otherwise({redirectTo: '/players'});
 	  
 	  cfpLoadingBarProvider.includeSpinner = false;	  
@@ -113,9 +115,9 @@ angular.module('mw4').controller('playersController', ['$filter', 'statsFactory'
 	ctrl.initComputedStats = function() {
 		ctrl.players.forEach(function(p) {
 			p.kdRatio = statsFactory.utils.getRatio(p.sum_kills, p.sum_deaths);
-			p.game_lost = p.game_played - p.game_won;
+			p.game_won = p.game_played - p.game_lost;
 			p.wlRatio = statsFactory.utils.getRatio(p.game_won, p.game_lost);
-			p.efficiency = p.sum_score / p.time_played / p.average_weight;
+			p.efficiency = p.sum_score / Math.max(p.time_played, 1) / Math.max(p.average_weight, 1);
 			
 			if (p.game_played > ctrl.maximumGamePlayed) {
 				ctrl.maximumGamePlayed = p.game_played;
