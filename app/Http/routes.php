@@ -16,8 +16,9 @@ $app->get('/', function () {
 });
 
 $app->post('/api/game/files/', ['uses' => 'APIController@postGameFile']);
-
-$app->get('/api/games/', ['uses' => 'APIController@getGames']);
-$app->get('/api/players/', ['uses' => 'APIController@getPlayers']);
-
 $app->get('/api/games/reparse', ['uses' => 'APIController@getReParse']);
+
+
+$app->get('/api/ladders', ['uses' => 'APIController@getLadders']);
+$app->get('/api/games/{ladderId}', ['uses' => 'APIController@getGames']);
+$app->get('/api/players/{ladderId}', ['uses' => 'APIController@getPlayers']);

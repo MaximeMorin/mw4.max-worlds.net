@@ -24,8 +24,17 @@ class APIController extends Controller
 		}				
 	}
 	
-	public function getGames() {
-		$gamesFromDB = DB::select("SELECT * FROM games");
+	public function getLadders() {
+		$ladders = DB::select("SELECT * FROM ladders");	
+		return response()->json(array_values($ladders));		
+	}
+	
+	public function getGames($ladderId) {
+		$gamesFromDB = DB::select(
+			"SELECT *
+			FROM games 
+			WHERE ladder_id = ?"
+		, array($ladderId));
 		
 		$games = [];		
 		foreach ($gamesFromDB as $game) {
@@ -33,7 +42,13 @@ class APIController extends Controller
 			$games[$game->id] = $game;
 		}
 		
-		$gameScores = DB::select("SELECT * FROM game_scores");
+		$gameScores = DB::select(
+			"SELECT gs.* 
+			FROM game_scores AS gs 
+				INNER JOIN games AS g ON g.id = gs.game_id 
+			WHERE g.ladder_id = ?"
+		, array($ladderId));
+		
 		foreach ($gameScores as $score) {
 			$game = $games[$score->game_id];			
 			
@@ -56,14 +71,16 @@ class APIController extends Controller
 		return response()->json(array_values($games));
 	}
 	
-	public function getPlayers() {
+	public function getPlayers($ladderId) {
 		$players = DB::select("
-			SELECT player_name, AVG(player_weight) AS average_weight, SUM(player_score) AS sum_score, SUM(player_kills) AS sum_kills,
-				SUM(player_deaths) AS sum_deaths, `gamesPlayedByPlayer`(player_name) AS game_played, `gamesLostByPlayer`(player_name) AS game_lost,
-				SUM(GREATEST(time_end, time_start) - time_start) AS time_played
-			FROM game_scores
-			WHERE player_is_bot = 0
-			GROUP BY player_name");
+			SELECT gs.player_name, AVG(gs.player_weight) AS average_weight, SUM(gs.player_score) AS sum_score, SUM(gs.player_kills) AS sum_kills,
+				SUM(gs.player_deaths) AS sum_deaths, `gamesPlayedByPlayer`(gs.player_name, ?) AS game_played, `gamesLostByPlayer`(gs.player_name, ?) AS game_lost,
+				SUM(GREATEST(gs.time_end, gs.time_start) - gs.time_start) AS time_played
+			FROM game_scores AS gs
+				INNER JOIN games AS g ON g.id = gs.game_id
+			WHERE g.ladder_id = ?
+				AND gs.player_is_bot = 0
+			GROUP BY gs.player_name", array($ladderId, $ladderId, $ladderId));
 		return response()->json($players);
 	}
 	

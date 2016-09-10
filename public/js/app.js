@@ -23,25 +23,30 @@ angular.module('mw4').config(['$routeProvider', 'cfpLoadingBarProvider', functio
 }]);
 
 angular.module('mw4').factory('statsService', ['$resource', function ($resource) {
-	return $resource('/api/:stats', null, {
-		'allGames': { method: 'GET', params: {'stats' : 'games'}, isArray: true },
-		'allPlayers': { method: 'GET', params: {'stats' : 'players'}, isArray: true }
+	return $resource('/api/:stats/:ladderId', null, {
+		'allLadders': { method: 'GET', params: {'stats' : 'ladders', 'ladderId' : null}, isArray: true },
+		'allGames': { method: 'GET', params: {'stats' : 'games', 'ladderId' : '@ladderId'}, isArray: true },
+		'allPlayers': { method: 'GET', params: {'stats' : 'players', 'ladderId' : '@ladderId'}, isArray: true }
 	});
 }]);
 
 angular.module('mw4').factory('statsFactory', ['statsService', function(statsService) {
 	var factory = this;
 	factory.utils = {};
+	factory.selectedLadder = {};
 		
-	factory.allGames = function() {	
-		return statsService.allGames().$promise;		
+	factory.allLadders = function() {	
+		return statsService.allLadders().$promise;		
 	};
 		
-	factory.allPlayers = function() {	
-		return statsService.allPlayers().$promise;		
+	factory.allGames = function(ladderId) {	
+		return statsService.allGames({'ladderId' : ladderId}).$promise;		
 	};
-	
-	
+		
+	factory.allPlayers = function(ladderId) {	
+		return statsService.allPlayers({'ladderId' : ladderId}).$promise;		
+	};
+		
 	factory.utils.getRatio = function(numerator, denominator) {
 		return numerator / Math.max(denominator, 1);
 	};	
@@ -53,32 +58,55 @@ angular.module('mw4').factory('statsFactory', ['statsService', function(statsSer
 	return factory;
 }]);
 
-angular.module('mw4').controller('mainController', ['$location', function($location) {
+angular.module('mw4').controller('mainController', ['$location', 'statsFactory', function($location, statsFactory) {
 	var ctrl = this;
+	ctrl.ladders = [];
+	ctrl.selectedLadder = null;
+	
+	ctrl.init = function() {
+		statsFactory.allLadders().then(function(results) {
+			ctrl.ladders = results;
+
+			if (ctrl.ladders.length > 0) {
+				ctrl.selectedLadder = ctrl.ladders[ctrl.ladders.length - 1];
+				ctrl.pushNewLadderToFactory();
+			}
+		});			
+	};	
+	
+	ctrl.pushNewLadderToFactory = function() {
+		statsFactory.selectedLadder = ctrl.selectedLadder;
+	};
 	
 	ctrl.isTabActive = function(tabRoute) {
 		return $location.path().indexOf(tabRoute) >= 0;
-	};	
+	};
+	
+	ctrl.init();
 	
 	return ctrl;
 }]);
 
-angular.module('mw4').controller('gamesController', ['$filter', 'statsFactory', function($filter, statsFactory) {
+angular.module('mw4').controller('gamesController', ['$scope', '$filter', 'statsFactory', function($scope, $filter, statsFactory) {
 	var ctrl = this;
+	ctrl.statsFactory = statsFactory;
+	
 	ctrl.allGames = [];
 	ctrl.games = [];
-		
-	ctrl.init = function() {		
-		statsFactory.allGames().then(function(results) {
-			ctrl.allGames = $filter('orderBy')(results, 'id', true);
-			ctrl.games = $filter('limitTo')(ctrl.allGames, 10);
-			ctrl.games.forEach(function(g) {
-				g.teams = $filter('orderBy')(g.teams, 'score', true);
-				g.teams.forEach(function(t) {
-					t.scores = $filter('orderBy')(t.scores, 'player_score', true);
+	
+	ctrl.init = function() {
+		if (statsFactory.selectedLadder.hasOwnProperty('id')) {
+			statsFactory.allGames(statsFactory.selectedLadder.id).then(function(results) {
+				ctrl.allGames = $filter('orderBy')(results, 'id', true);
+				ctrl.games = $filter('limitTo')(ctrl.allGames, 10);
+				ctrl.games.forEach(function(g) {
+					g.teams = $filter('orderBy')(g.teams, 'score', true);
+					g.teams.forEach(function(t) {
+						t.scores = $filter('orderBy')(t.scores, 'player_score', true);
+					});
 				});
 			});
-		});
+		}
 	};
 	
 	ctrl.getTimePlayed = function(score) {
@@ -91,13 +119,21 @@ angular.module('mw4').controller('gamesController', ['$filter', 'statsFactory', 
 		return statsFactory.utils.getRatio(kills, deaths);
 	};
 	
+	$scope.$watch('gamesCtrl.statsFactory.selectedLadder', function(newValue, oldValue) {
+		if (newValue !== oldValue) {
+			ctrl.init();
+		}
+	});
+	
 	ctrl.init();
 	
 	return ctrl;
 }]);
 
-angular.module('mw4').controller('playersController', ['$filter', 'statsFactory', function($filter, statsFactory) {
+angular.module('mw4').controller('playersController', ['$scope', '$filter', 'statsFactory', function($scope, $filter, statsFactory) {
 	var ctrl = this;
+	ctrl.statsFactory = statsFactory;
+	
 	ctrl.players = [];
 	ctrl.maximumGamePlayed = 0;
 	ctrl.maximumKillDeathRatio = 0;
@@ -105,11 +141,13 @@ angular.module('mw4').controller('playersController', ['$filter', 'statsFactory'
 	ctrl.maximumEfficiency = 0;
 		
 	ctrl.init = function() {
-		statsFactory.allPlayers().then(function(results) {			
-			ctrl.players = results;
-			ctrl.initComputedStats();
-			ctrl.players = $filter('orderBy')(ctrl.players, 'totalScore', true);
-		});
+		if (statsFactory.selectedLadder.hasOwnProperty('id')) {		
+			statsFactory.allPlayers(statsFactory.selectedLadder.id).then(function(results) {			
+				ctrl.players = results;
+				ctrl.initComputedStats();
+				ctrl.players = $filter('orderBy')(ctrl.players, 'totalScore', true);
+			});		
+		}
 	};
 	
 	ctrl.initComputedStats = function() {
@@ -148,6 +186,12 @@ angular.module('mw4').controller('playersController', ['$filter', 'statsFactory'
 	ctrl.getTotalTimePlayed = function(timePlayed) {
 		return statsFactory.utils.getTotalTimePlayed(timePlayed);
 	};
+	
+	$scope.$watch('playersCtrl.statsFactory.selectedLadder', function(newValue, oldValue) {
+		if (newValue !== oldValue) {
+			ctrl.init();
+		}
+	});		
 	
 	ctrl.init();
 	
