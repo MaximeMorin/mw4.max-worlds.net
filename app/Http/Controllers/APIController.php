@@ -81,6 +81,17 @@ class APIController extends Controller
 			WHERE g.ladder_id = ?
 				AND gs.player_is_bot = 0
 			GROUP BY gs.player_name", array($ladderId, $ladderId, $ladderId));
+		
+		$playerTrophies = DB::select("SELECT * FROM trophies ORDER BY ladder_id ASC");		
+		foreach ($players as $player) {
+			$player->trophies = array();
+			foreach ($playerTrophies as $trophy) {
+				if ($player->player_name == $trophy->player_name) {
+					array_push($player->trophies, $trophy);
+				}
+			}
+		}
+		
 		return response()->json($players);
 	}
 	

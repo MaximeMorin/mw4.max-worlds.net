@@ -13,6 +13,7 @@
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
 		<link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.css' type='text/css' media='all' />
+		<link rel='stylesheet' href='/css/app.css' type='text/css' media='all' />
  
 		<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
@@ -25,11 +26,11 @@
 	<body>				
 		<div class="container-fluid">				
 			<div class="row">
-				<div class="col-xs-6">
-					<h1>Yet Another MechWarrior Server - Stats</h1>		
+				<div class="col-xs-12 col-md-6">
+					<h1>Yet Another MechWarrior Server</h1>		
 					<h2>{{ mainCtrl.selectedLadder.name }}</h2>
 				</div>
-				<div class="col-xs-offset-4 col-xs-2">
+				<div class="col-md-offset-2 col-md-4 col-xs-12">
 					<form style="margin-top:1.5em;">
 						<select class="form-control" ng-options="ladder as ladder.name for ladder in mainCtrl.ladders | orderBy:'-id'" 
 								ng-model="mainCtrl.selectedLadder" ng-change="mainCtrl.pushNewLadderToFactory()">							

@@ -17,6 +17,14 @@
 				<tr ng-repeat="player in playersCtrl.players">
 					<td>
 						{{ player.player_name }}
+						<div class="pull-right">
+							<div class="trophy" ng-repeat="trophy in player.trophies">
+								<i class="fa fa-trophy fa-lg" ng-class="{'trophy-first' : trophy.position == 1, 'trophy-second' : trophy.position == 2, 'trophy-third' : trophy.position==3}"></i>
+								<div class="trophy-tooltip">
+									{{ playersCtrl.getTrophyTextualPosition(trophy.position) }} @ {{ mainCtrl.getLadderById(trophy.ladder_id).name }}
+								</div>															
+							</div>
+						</div>							
 					</td>		
 					<td class="text-right">
 						<strong>

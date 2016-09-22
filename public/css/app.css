@@ -1,0 +1,45 @@
+.trophy-first {
+	color: gold;
+}
+.trophy-second {
+	color: silver;
+}
+.trophy-third {
+	color: #CD7F32;
+}
+.trophy-tooltip {
+    position: absolute;
+    display: none;
+    background-color: white;
+    border: 1px solid gray;
+    color: gray;
+    padding: 0.5em;
+    font-size: 0.8em;
+    margin-top: 11px;
+    font-family: sans-serif;
+    margin-left: -97px;
+    width: 250px;
+    opacity: 0.95;
+}
+.trophy:hover .trophy-tooltip {
+	display: block;
+}
+
+
+.trophy-tooltip:before {
+    content: "";
+    position: absolute;
+    z-index: 2001;
+    top: -11px;
+    left: 43%;
+    border-left: 10px solid transparent !important;
+    border-top: 0;
+    border-right: 10px solid transparent !important;
+    border-bottom: 10px solid;
+    opacity: 0.95;
+}
+
+.trophy-tooltip:before {
+    margin-left: -11px;
+    border-right-color: gray;
+}

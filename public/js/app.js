@@ -82,6 +82,18 @@ angular.module('mw4').controller('mainController', ['$location', 'statsFactory',
 		return $location.path().indexOf(tabRoute) >= 0;
 	};
 	
+	ctrl.getLadderById = function(id) {
+		var ladder = null;
+		
+		ctrl.ladders.forEach(function(l) {
+			if (l.id === id) {
+				ladder = l;
+			}
+		});
+		
+		return ladder;
+	};
+	
 	ctrl.init();
 	
 	return ctrl;
@@ -135,16 +147,18 @@ angular.module('mw4').controller('playersController', ['$scope', '$filter', 'sta
 	ctrl.statsFactory = statsFactory;
 	
 	ctrl.players = [];
-	ctrl.maximumGamePlayed = 0;
-	ctrl.maximumKillDeathRatio = 0;
-	ctrl.maximumWinLoseRatio = 0;
-	ctrl.maximumEfficiency = 0;
 		
 	ctrl.init = function() {
+		ctrl.maximumGamePlayed = 0;
+		ctrl.maximumKillDeathRatio = 0;
+		ctrl.maximumWinLoseRatio = 0;
+		ctrl.maximumEfficiency = 0;		
+		
 		if (statsFactory.selectedLadder.hasOwnProperty('id')) {		
 			statsFactory.allPlayers(statsFactory.selectedLadder.id).then(function(results) {			
 				ctrl.players = results;
 				ctrl.initComputedStats();
+				ctrl.bindPlayerTrophiesToLadders();
 				ctrl.players = $filter('orderBy')(ctrl.players, 'totalScore', true);
 			});		
 		}
@@ -183,8 +197,24 @@ angular.module('mw4').controller('playersController', ['$scope', '$filter', 'sta
 		});
 	};
 	
+	ctrl.bindPlayerTrophiesToLadders = function() {
+		
+	};
+	
 	ctrl.getTotalTimePlayed = function(timePlayed) {
 		return statsFactory.utils.getTotalTimePlayed(timePlayed);
+	};
+	
+	ctrl.getTrophyTextualPosition = function(position) {
+		var text = "1st";
+		
+		if (position == 2) {
+			text = "2nd";
+		} else if (position == 3) {
+			text = "3rd";
+		}
+		
+		return text;
 	};
 	
 	$scope.$watch('playersCtrl.statsFactory.selectedLadder', function(newValue, oldValue) {
